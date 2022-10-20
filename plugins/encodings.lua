@@ -136,6 +136,35 @@ function encodings.get_all()
   return all
 end
 
+---Open a commandview to select a charset and executes the given callback,
+---@param title_label string Title displayed on the commandview
+---@param callback fun(charset: string)
+function encodings.select_encoding(title_label, callback)
+  core.command_view:enter(title_label, {
+    submit = function(_, item)
+      callback(item.charset)
+    end,
+    suggest = function(text)
+      local charsets = encodings.get_all()
+      local list_labels = {}
+      local list_charset = {}
+      for _, element in ipairs(charsets) do
+        local label = element.name .. " (" .. element.charset .. ")"
+        table.insert(list_labels, label)
+        list_charset[label] = element.charset
+      end
+      local res = common.fuzzy_match(list_labels, text)
+      for i, name in ipairs(res) do
+        res[i] = {
+          text = name,
+          charset = list_charset[name]
+        }
+      end
+      return res
+    end
+  })
+end
+
 --------------------------------------------------------------------------------
 -- Overwrite Doc methods to properly add encoding detection and conversion.
 --------------------------------------------------------------------------------
@@ -204,8 +233,6 @@ end
 function Doc:reload()
   if self.filename then
     local sel = { self:get_selection() }
-    self.encoding = nil
-    self.convert = false
     self:load(self.filename)
     self:clean()
     self:set_selection(table.unpack(sel))
@@ -264,35 +291,27 @@ end
 --------------------------------------------------------------------------------
 command.add("core.docview", {
   ["doc:change-encoding"] = function(dv)
-    core.command_view:enter("Select Output Encoding", {
-      submit = function(_, item)
-        dv.doc.encoding = item.charset
-        if item.charset ~= "UTF-8" and item.charset ~= "ASCII" then
-          dv.doc.convert = true
-        else
-          dv.doc.convert = false
-        end
-        dv.doc:save()
-      end,
-      suggest = function(text)
-        local charsets = encodings.get_all()
-        local list_labels = {}
-        local list_charset = {}
-        for _, element in ipairs(charsets) do
-          local label = element.name .. " (" .. element.charset .. ")"
-          table.insert(list_labels, label)
-          list_charset[label] = element.charset
-        end
-        local res = common.fuzzy_match(list_labels, text)
-        for i, name in ipairs(res) do
-          res[i] = {
-            text = name,
-            charset = list_charset[name]
-          }
-        end
-        return res
+    encodings.select_encoding("Select Output Encoding", function(charset)
+      dv.doc.encoding = charset
+      if charset ~= "UTF-8" and charset ~= "ASCII" then
+        dv.doc.convert = true
+      else
+        dv.doc.convert = false
       end
-    })
+      dv.doc:save()
+    end)
+  end,
+
+  ["doc:reload-with-encoding"] = function(dv)
+    encodings.select_encoding("Reload With Encoding", function(charset)
+      dv.doc.encoding = charset
+      if charset ~= "UTF-8" and charset ~= "ASCII" then
+        dv.doc.convert = true
+      else
+        dv.doc.convert = false
+      end
+      dv.doc:reload()
+    end)
   end
 })
 
@@ -312,7 +331,13 @@ core.status_view:add_item({
       style.text, dv.doc.encoding or "none"
     }
   end,
-  command = "doc:change-encoding",
+  command = function(button)
+    if button == "left" then
+      command.perform "doc:change-encoding"
+    elseif button == "right" then
+      command.perform "doc:reload-with-encoding"
+    end
+  end,
   tooltip = "encoding"
 })
 
