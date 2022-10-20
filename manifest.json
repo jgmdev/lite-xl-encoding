@@ -1,0 +1,41 @@
+{
+  "plugins": [
+    {
+      "name": "encoding",
+      "version": "1.0",
+      "type": "library",
+      "description": "Add support for detecting file and string encodings as converting between them.",
+      "mod_version": "3",
+      "files": [
+        {
+          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.0/encoding.x86_64-linux.so",
+          "arch": "x86_64-linux",
+          "path": "init.x86_64-linux.so"
+        },
+        {
+          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.0/encoding.x86_64-darwin.so",
+          "arch": "x86_64-darwin",
+          "path": "init.x86_64-darwin.so"
+        },
+        {
+          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.0/encoding.x86_64-windows.dll",
+          "arch": "x86_64-windows",
+          "path": "init.x86_64-windows.dll"
+        },
+        {
+          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.0/encoding.x86-windows.dll",
+          "arch": "x86-windows",
+          "path": "init.x86-windows.dll"
+        }
+      ]
+    },
+    {
+      "name": "encodings",
+      "version": "1.0",
+      "description": "Properly read files that are not encoded in UTF-8 or ASCII by auto-detecting their encoding and allows saving on different text encodings.",
+      "mod_version": "3",
+      "path": "plugins/encodings.lua",
+      "dependencies": { "encoding": { } }
+    }
+  ]
+}

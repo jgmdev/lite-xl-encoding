@@ -1,0 +1,154 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release Version
+        default: v1.0
+        required: true
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-18.04
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.tag.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Fetch Version
+        id: tag
+        run: |
+          if [[ "${{ github.event.inputs.version }}" != "" ]]; then
+            echo ::set-output name=version::${{ github.event.inputs.version }}
+          else
+            echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+          fi
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag.outputs.version }}
+          release_name: "Lite XL Encoding ${{ steps.tag.outputs.version }}"
+          draft: true
+          prerelease: false
+          body_path: changelog.md
+
+  build_linux:
+    name: Linux
+    needs: release
+    runs-on: ubuntu-18.04
+    defaults: { run: { shell: bash } }
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Python Setup
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install Dependencies
+        run: |
+           sudo apt -y install ninja-build wayland-protocols libsdl2-dev libfreetype6 \
+            && pip3 install meson
+      - name: Build
+        run: |
+          meson setup --wrap-mode forcefallback build && meson compile -C build \
+            && strip build/encoding.so
+      - name: Upload
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: build/encoding.so
+          asset_name: encoding.x86_64-linux.so
+          asset_content_type: application/x-sharedlib
+
+  build_windows:
+    name: Windows
+    needs: release
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        msystem: [MINGW32, MINGW64]
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          install: >-
+            base-devel
+            git
+            zip
+      - name: Set Environment Variables
+        run: |
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          if [[ "${MSYSTEM}" == "MINGW64" ]]; then
+            echo "PLATFORM=x86_64-windows" >> "$GITHUB_ENV"
+          else
+            echo "PLATFORM=x86-windows" >> "$GITHUB_ENV"
+          fi
+      - name: Install Dependencies
+        run: |
+          pacman --noconfirm -S \
+            ${MINGW_PACKAGE_PREFIX}-{gcc,meson,ninja,ntldd,pkg-config,mesa,freetype,pcre2,SDL2} unzip
+      - name: Build
+        run: |
+          meson setup --wrap-mode forcefallback build \
+            && meson compile -C build \
+            && ntldd -R "build/encoding.dll"
+      - name: Upload
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: build/encoding.dll
+          asset_name: encoding.${{ env.PLATFORM }}.dll
+          asset_content_type: application/x-sharedlib
+
+  build_macos:
+    name: macOS (x86_64)
+    needs: release
+    runs-on: macos-11
+    env:
+      CC: clang
+      CXX: clang++
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Python Setup
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install Dependencies
+        run: |
+          brew install bash ninja sdl2 \
+            && pip3 install meson
+      - name: Build
+        run: |
+          meson setup --wrap-mode forcefallback build \
+            && meson compile -C build
+      - name: Upload
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: build/encoding.so
+          asset_name: encoding.x86_64-darwin.so
+          asset_content_type: application/x-sharedlib
