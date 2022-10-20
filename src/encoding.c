@@ -265,7 +265,12 @@ const char* encoding_detect(const char* string, size_t string_len) {
   ) {
     SDL_free(utf8_output);
     return bom_charset;
-  } else if (valid_utf8) {
+  }
+
+  if (utf8_output)
+    SDL_free(utf8_output);
+
+  if (valid_utf8) {
     return "UTF-8";
   } else if (*charset) {
     return charset;
@@ -406,7 +411,7 @@ int f_convert(lua_State *L) {
   );
 
   /* strip bom sometimes added when converting to utf-8, we don't need it */
-  if (strcmp(to, "UTF-8") == 0) {
+  if (output && strcmp(to, "UTF-8") == 0) {
     encoding_charset_from_bom(output, output_len, &bom_len);
     if (bom_len > 0) {
       SDL_memmove(output,output+bom_len, output_len-bom_len);
