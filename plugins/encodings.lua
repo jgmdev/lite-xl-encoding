@@ -230,15 +230,6 @@ function Doc:load(filename)
   self:reset_syntax()
 end
 
-function Doc:reload()
-  if self.filename then
-    local sel = { self:get_selection() }
-    self:load(self.filename)
-    self:clean()
-    self:set_selection(table.unpack(sel))
-  end
-end
-
 function Doc:save(filename, abs_filename)
   if not filename then
     assert(self.filename, "no filename set to default to")
