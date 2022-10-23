@@ -26,23 +26,26 @@ jobs:
           else
             echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
           fi
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update Tag
+        uses: richardsimko/update-tag@v1
         with:
           tag_name: ${{ steps.tag.outputs.version }}
-          release_name: "Lite XL Encoding ${{ steps.tag.outputs.version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.version }}
+          name: "Lite XL Encoding ${{ steps.tag.outputs.version }}"
           draft: true
-          prerelease: false
           body_path: changelog.md
+          generate_release_notes: true
 
   build_linux:
     name: Linux
     needs: release
     runs-on: ubuntu-18.04
-    defaults: { run: { shell: bash } }
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -54,21 +57,19 @@ jobs:
           python-version: 3.9
       - name: Install Dependencies
         run: |
-           sudo apt -y install ninja-build wayland-protocols libsdl2-dev libfreetype6 \
-            && pip3 install meson
+           sudo apt -y install ninja-build wayland-protocols libsdl2-dev libfreetype6
+           pip3 install meson
       - name: Build
         run: |
-          meson setup --wrap-mode forcefallback build && meson compile -C build \
-            && strip build/encoding.so
+          meson setup --wrap-mode forcefallback build && meson compile -C build
+          strip build/encoding.so
+          mv build/encoding.so encoding.x86_64-linux.so
       - name: Upload
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: build/encoding.so
-          asset_name: encoding.x86_64-linux.so
-          asset_content_type: application/x-sharedlib
+          tag_name: ${{ needs.release.outputs.version }}
+          draft: true
+          files: encoding.x86_64-linux.so
 
   build_windows:
     name: Windows
@@ -106,18 +107,16 @@ jobs:
             ${MINGW_PACKAGE_PREFIX}-{gcc,meson,ninja,ntldd,pkg-config,mesa,freetype,pcre2,SDL2} unzip
       - name: Build
         run: |
-          meson setup --wrap-mode forcefallback build \
-            && meson compile -C build \
-            && ntldd -R "build/encoding.dll"
+          meson setup --wrap-mode forcefallback build
+          meson compile -C build
+          ntldd -R "build/encoding.dll"
+          mv build/encoding.dll encoding.${PLATFORM}.dll
       - name: Upload
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: build/encoding.dll
-          asset_name: encoding.${{ env.PLATFORM }}.dll
-          asset_content_type: application/x-sharedlib
+          tag_name: ${{ needs.release.outputs.version }}
+          draft: true
+          files: encoding.${{ env.PLATFORM }}.dll
 
   build_macos:
     name: macOS (x86_64)
@@ -137,18 +136,16 @@ jobs:
           python-version: 3.9
       - name: Install Dependencies
         run: |
-          brew install bash ninja sdl2 \
-            && pip3 install meson
+          brew install bash ninja sdl2
+          pip3 install meson
       - name: Build
         run: |
-          meson setup --wrap-mode forcefallback build \
-            && meson compile -C build
+          meson setup --wrap-mode forcefallback build
+          meson compile -C build
+          mv build/encoding.so encoding.x86_64-darwin.so
       - name: Upload
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: build/encoding.so
-          asset_name: encoding.x86_64-darwin.so
-          asset_content_type: application/x-sharedlib
+          tag_name: ${{ needs.release.outputs.version }}
+          draft: true
+          files: encoding.x86_64-darwin.so
