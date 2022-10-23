@@ -1,9 +1,14 @@
 #include <SDL.h>
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
 #include <stdbool.h>
 #include <uchardet.h>
+
+#ifdef USE_LUA
+  #include <lua.h>
+  #include <lauxlib.h>
+  #include <lualib.h>
+#else
+  #include <lite_xl_plugin_api.h>
+#endif
 
 typedef struct {
   const char* charset;
@@ -543,5 +548,8 @@ int luaopen_encoding(lua_State *L) {
 
 /* Called by lite-xl f_load_native_plugin on `require "encoding"` */
 int luaopen_lite_xl_thread(lua_State *L, void* (*api_require)(char *)) {
+#ifndef USE_LUA
+  lite_xl_plugin_init(api_require);
+#endif
   return luaopen_encoding(L);
 }

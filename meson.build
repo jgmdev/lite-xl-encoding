@@ -33,13 +33,9 @@ endif
 #===============================================================================
 default_fallback_options = ['warning_level=0', 'werror=false']
 
-# Lua
-lua_dep = dependency('lua-5.4',
-    version: '>= 5.4',
-    fallback: ['lua', 'lua_dep'],
-    default_options: default_fallback_options + [
-        'default_library=static', 'line_editing=false', 'interpreter=false'
-    ]
+# uchardet
+uchardet_dep = dependency('uchardet', fallback: ['uchardet', 'uchardet_dep'],
+    default_options: default_fallback_options + ['default_library=static']
 )
 
 # SDL2
@@ -89,6 +85,22 @@ sdl_dep = dependency('sdl2',
     default_options: default_fallback_options + sdl_options
 )
 
+# Optional Lua
+encoding_dependencies = [sdl_dep, uchardet_dep]
+
+use_lua = not get_option('use_lua').disabled()
+if use_lua
+    lua_dep = dependency('lua-5.4',
+        version: '>= 5.4',
+        fallback: ['lua', 'lua_dep'],
+        default_options: default_fallback_options + [
+            'default_library=static', 'line_editing=false', 'interpreter=false'
+        ]
+    )
+    compiler_args += '-DUSE_LUA'
+    encoding_dependencies += lua_dep
+endif
+
 #===============================================================================
 # Library Suffix
 #===============================================================================
@@ -104,64 +116,10 @@ endif
 #===============================================================================
 shared_library(
     'encoding',
-    [
-        # uchardet sources
-        'uchardet/CharDistribution.cpp',
-        'uchardet/JpCntx.cpp',
-        'uchardet/LangModels/LangArabicModel.cpp',
-        'uchardet/LangModels/LangBulgarianModel.cpp',
-        'uchardet/LangModels/LangCroatianModel.cpp',
-        'uchardet/LangModels/LangCzechModel.cpp',
-        'uchardet/LangModels/LangEsperantoModel.cpp',
-        'uchardet/LangModels/LangEstonianModel.cpp',
-        'uchardet/LangModels/LangFinnishModel.cpp',
-        'uchardet/LangModels/LangFrenchModel.cpp',
-        'uchardet/LangModels/LangDanishModel.cpp',
-        'uchardet/LangModels/LangGermanModel.cpp',
-        'uchardet/LangModels/LangGreekModel.cpp',
-        'uchardet/LangModels/LangHungarianModel.cpp',
-        'uchardet/LangModels/LangHebrewModel.cpp',
-        'uchardet/LangModels/LangIrishModel.cpp',
-        'uchardet/LangModels/LangItalianModel.cpp',
-        'uchardet/LangModels/LangLithuanianModel.cpp',
-        'uchardet/LangModels/LangLatvianModel.cpp',
-        'uchardet/LangModels/LangMalteseModel.cpp',
-        'uchardet/LangModels/LangPolishModel.cpp',
-        'uchardet/LangModels/LangPortugueseModel.cpp',
-        'uchardet/LangModels/LangRomanianModel.cpp',
-        'uchardet/LangModels/LangRussianModel.cpp',
-        'uchardet/LangModels/LangSlovakModel.cpp',
-        'uchardet/LangModels/LangSloveneModel.cpp',
-        'uchardet/LangModels/LangSwedishModel.cpp',
-        'uchardet/LangModels/LangSpanishModel.cpp',
-        'uchardet/LangModels/LangThaiModel.cpp',
-        'uchardet/LangModels/LangTurkishModel.cpp',
-        'uchardet/LangModels/LangVietnameseModel.cpp',
-        'uchardet/nsHebrewProber.cpp',
-        'uchardet/nsCharSetProber.cpp',
-        'uchardet/nsBig5Prober.cpp',
-        'uchardet/nsEUCJPProber.cpp',
-        'uchardet/nsEUCKRProber.cpp',
-        'uchardet/nsEUCTWProber.cpp',
-        'uchardet/nsEscCharsetProber.cpp',
-        'uchardet/nsEscSM.cpp',
-        'uchardet/nsGB2312Prober.cpp',
-        'uchardet/nsMBCSGroupProber.cpp',
-        'uchardet/nsMBCSSM.cpp',
-        'uchardet/nsSBCSGroupProber.cpp',
-        'uchardet/nsSBCharSetProber.cpp',
-        'uchardet/nsSJISProber.cpp',
-        'uchardet/nsUTF8Prober.cpp',
-        'uchardet/nsLatin1Prober.cpp',
-        'uchardet/nsUniversalDetector.cpp',
-        'uchardet/uchardet.cpp',
-        # encoding lua extension
-        'src/encoding.c'
-    ],
+    ['src/encoding.c'],
     name_prefix: '',
     name_suffix: library_suffix,
-    include_directories: ['uchardet'],
-    dependencies: [lua_dep, sdl_dep],
+    dependencies: encoding_dependencies,
     c_args: compiler_args,
     link_args: link_args
 )

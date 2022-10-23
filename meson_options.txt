@@ -1,0 +1,5 @@
+option(
+    'use_lua',
+    type : 'feature',
+    description : 'Link against Lua instead of using Lite XL plugin api'
+)
