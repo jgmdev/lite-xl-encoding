@@ -14,7 +14,7 @@ project('encoding',
 # Compiler Settings
 #===============================================================================
 cc = meson.get_compiler('c')
-compiler_args = ['-DSDL_MAIN_HANDLED']
+compiler_args = ['-DSDL_MAIN_HANDLED', '-Wno-declaration-after-statement']
 
 #===============================================================================
 # Linker Settings
