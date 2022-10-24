@@ -547,7 +547,7 @@ int luaopen_encoding(lua_State *L) {
 }
 
 /* Called by lite-xl f_load_native_plugin on `require "encoding"` */
-int luaopen_lite_xl_thread(lua_State *L, void* (*api_require)(char *)) {
+int luaopen_lite_xl_encoding(lua_State *L, void* (*api_require)(char *)) {
 #ifndef USE_LUA
   lite_xl_plugin_init(api_require);
 #endif
