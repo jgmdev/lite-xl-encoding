@@ -55,30 +55,44 @@ uchardet_dep = dependency('uchardet', fallback: ['uchardet', 'uchardet_dep'],
 # SDL2
 sdl_options = []
 
-# enable/disable sdl features
+# we explicitly need these
 sdl_options += 'test=false'
 sdl_options += 'run_test=false'
-sdl_options += 'assertions=release'
+sdl_options += 'use_loadso=enabled'
 sdl_options += 'prefer_dlopen=true'
-sdl_options += 'use_threads=disabled'
-sdl_options += 'use_atomic=disabled'
+sdl_options += 'use_video=enabled'
+sdl_options += 'use_atomic=enabled'
+sdl_options += 'use_threads=enabled'
+sdl_options += 'use_timers=enabled'
+sdl_options += 'use_events=enabled'
+
+if host_machine.system() == 'darwin' or host_machine.system() == 'windows'
+    sdl_options += 'use_video_x11=disabled'
+    sdl_options += 'use_video_wayland=disabled'
+else
+    sdl_options += 'use_render=enabled'
+    sdl_options += 'use_video_x11=auto'
+    sdl_options += 'use_video_wayland=auto'
+endif
+
+# we leave this up to what the host system has except on windows
+if host_machine.system() != 'windows'
+    sdl_options += 'use_video_opengl=auto'
+    sdl_options += 'use_video_openglesv2=auto'
+else
+    sdl_options += 'use_video_opengl=disabled'
+    sdl_options += 'use_video_openglesv2=disabled'
+endif
+
+# we don't need these
+sdl_options += 'use_sensor=disabled'
+sdl_options += 'use_haptic=disabled'
 sdl_options += 'use_audio=disabled'
 sdl_options += 'use_cpuinfo=disabled'
-sdl_options += 'use_events=disabled'
-sdl_options += 'use_file=disabled'
 sdl_options += 'use_joystick=disabled'
-sdl_options += 'use_haptic=disabled'
-sdl_options += 'use_hidapi=disabled'
-sdl_options += 'use_sensor=disabled'
-sdl_options += 'use_loadso=enabled'
-sdl_options += 'use_locale=enabled'
-sdl_options += 'use_render=disabled'
-sdl_options += 'use_timers=disabled'
-sdl_options += 'use_video=disabled'
+sdl_options += 'use_video_vulkan=disabled'
+sdl_options += 'use_video_offscreen=disabled'
 sdl_options += 'use_power=disabled'
-sdl_options += 'use_filesystem=disabled'
-sdl_options += 'use_dummies=false'
-sdl_options += 'with_main=false'
 
 sdl_dep = dependency('sdl2',
     fallback: ['sdl2', 'sdl2_dep'],
