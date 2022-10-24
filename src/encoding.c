@@ -1,4 +1,4 @@
-#include <SDL.h>
+#include <SDL2/SDL_locale.h>
 #include <stdbool.h>
 #include <uchardet.h>
 
