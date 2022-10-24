@@ -31,7 +31,9 @@ endif
 #===============================================================================
 # Dependencies
 #===============================================================================
-default_fallback_options = ['warning_level=0', 'werror=false', 'default_library=static']
+default_fallback_options = [
+    'warning_level=0', 'werror=false', 'default_library=static'
+]
 
 # Optional Lua
 use_lua = not get_option('use_lua').disabled()
@@ -100,10 +102,10 @@ sdl_dep = dependency('sdl2',
 )
 
 # Dependencies list
-encoding_dependencies = [sdl_dep, uchardet_dep]
+plugin_dependencies = [sdl_dep, uchardet_dep]
 
 if use_lua
-    encoding_dependencies += lua_dep
+    plugin_dependencies += lua_dep
 endif
 
 #===============================================================================
@@ -124,7 +126,7 @@ shared_library(
     ['src/encoding.c'],
     name_prefix: '',
     name_suffix: library_suffix,
-    dependencies: encoding_dependencies,
+    dependencies: plugin_dependencies,
     c_args: compiler_args,
     link_args: link_args
 )
