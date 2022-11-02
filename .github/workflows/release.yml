@@ -125,7 +125,7 @@ jobs:
     runs-on: macos-11
     strategy:
       matrix:
-        arch: [x86_64, arm64]
+        arch: [x86_64, aarch64]
     env:
       CC: clang
       CXX: clang++
@@ -144,7 +144,7 @@ jobs:
           pip3 install meson
       - name: Build
         run: |
-          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+          if [[ "${{ matrix.arch }}" == "aarch64" ]]; then
             meson setup --cross-file crossfiles/macos_arm64.conf \
               --wrap-mode forcefallback -Duse_lua=disabled build
           else
