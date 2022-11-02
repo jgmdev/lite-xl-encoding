@@ -57,8 +57,9 @@ jobs:
           python-version: 3.9
       - name: Install Dependencies
         run: |
-           sudo apt -y install ninja-build wayland-protocols libsdl2-dev libfreetype6
-           pip3 install meson
+          sudo apt-get update
+          sudo apt -y install ninja-build wayland-protocols libsdl2-dev libfreetype6
+          pip3 install meson
       - name: Build
         run: |
           meson setup --wrap-mode forcefallback build && meson compile -C build
@@ -122,6 +123,9 @@ jobs:
     name: macOS (x86_64)
     needs: release
     runs-on: macos-11
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]
     env:
       CC: clang
       CXX: clang++
@@ -140,12 +144,17 @@ jobs:
           pip3 install meson
       - name: Build
         run: |
-          meson setup --wrap-mode forcefallback build
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            meson setup --cross-file crossfiles/macos_arm64.conf \
+              --wrap-mode forcefallback -Duse_lua=disabled build
+          else
+            meson setup --wrap-mode forcefallback -Duse_lua=disabled build
+          fi
           meson compile -C build
-          mv build/encoding.so encoding.x86_64-darwin.so
+          mv build/encoding.so encoding.${{ matrix.arch }}-darwin.so
       - name: Upload
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.release.outputs.version }}
           draft: true
-          files: encoding.x86_64-darwin.so
+          files: encoding.${{ matrix.arch }}-darwin.so
