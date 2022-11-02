@@ -4,7 +4,7 @@
 The lite_xl plugin API is quite simple. Any shared library can be a plugin file, so long
 as it has an entrypoint that looks like the following, where xxxxx is the plugin name:
 #include "lite_xl_plugin_api.h"
-int lua_open_lite_xl_xxxxx(lua_State* L, void* XL) {
+int luaopen_lite_xl_xxxxx(lua_State* L, void* XL) {
   lite_xl_plugin_init(XL);
   ...
   return 1;
@@ -12,6 +12,11 @@ int lua_open_lite_xl_xxxxx(lua_State* L, void* XL) {
 In linux, to compile this file, you'd do: 'gcc -o xxxxx.so -shared xxxxx.c'. Simple!
 Due to the way the API is structured, you *should not* link or include lua libraries.
 This file was automatically generated. DO NOT MODIFY DIRECTLY.
+
+UNLESS you're us, and you had to modify this file manually to get it ready for 2.1.
+
+Go figure.
+
 **/
 
 
@@ -290,7 +295,7 @@ static	void (*lua_callk)	(lua_State *L, int nargs, int nresults, int ctx, lua_CF
 static	int (*lua_getctx)	(lua_State *L, int *ctx);
 static	int (*lua_pcallk)	(lua_State *L, int nargs, int nresults, int errfunc, int ctx, lua_CFunction k);
 static	int (*lua_load)	(lua_State *L, lua_Reader reader, void *dt, const char *chunkname, const char *mode);
-static	int (*lua_dump)	(lua_State *L, lua_Writer writer, void *data);
+static	int (*lua_dump)	(lua_State *L, lua_Writer writer, void *data, int strip);
 static	int (*lua_yieldk)	(lua_State *L, int nresults, int ctx, lua_CFunction k);
 static	int (*lua_resume)	(lua_State *L, lua_State *from, int narg);
 static	int (*lua_status)	(lua_State *L);
@@ -468,7 +473,7 @@ static	void 	__lite_xl_fallback_lua_callk	(lua_State *L, int nargs, int nresults
 static	int 	__lite_xl_fallback_lua_getctx	(lua_State *L, int *ctx) { fputs("warning: lua_getctx is a stub", stderr); }
 static	int 	__lite_xl_fallback_lua_pcallk	(lua_State *L, int nargs, int nresults, int errfunc, int ctx, lua_CFunction k) { fputs("warning: lua_pcallk is a stub", stderr); }
 static	int 	__lite_xl_fallback_lua_load	(lua_State *L, lua_Reader reader, void *dt, const char *chunkname, const char *mode) { fputs("warning: lua_load is a stub", stderr); }
-static	int 	__lite_xl_fallback_lua_dump	(lua_State *L, lua_Writer writer, void *data) { fputs("warning: lua_dump is a stub", stderr); }
+static	int 	__lite_xl_fallback_lua_dump	(lua_State *L, lua_Writer writer, void *data, int strip) { fputs("warning: lua_dump is a stub", stderr); }
 static	int 	__lite_xl_fallback_lua_yieldk	(lua_State *L, int nresults, int ctx, lua_CFunction k) { fputs("warning: lua_yieldk is a stub", stderr); }
 static	int 	__lite_xl_fallback_lua_resume	(lua_State *L, lua_State *from, int narg) { fputs("warning: lua_resume is a stub", stderr); }
 static	int 	__lite_xl_fallback_lua_status	(lua_State *L) { fputs("warning: lua_status is a stub", stderr); }
@@ -491,6 +496,7 @@ static	int 	__lite_xl_fallback_lua_sethook	(lua_State *L, lua_Hook func, int mas
 static	lua_Hook 	__lite_xl_fallback_lua_gethook	(lua_State *L) { fputs("warning: lua_gethook is a stub", stderr); }
 static	int 	__lite_xl_fallback_lua_gethookmask	(lua_State *L) { fputs("warning: lua_gethookmask is a stub", stderr); }
 static	int 	__lite_xl_fallback_lua_gethookcount	(lua_State *L) { fputs("warning: lua_gethookcount is a stub", stderr); }
+
 
 /** lauxlib.h **/
 
@@ -554,6 +560,7 @@ static	void (*luaL_addvalue)	(luaL_Buffer *B);
 static	void (*luaL_pushresult)	(luaL_Buffer *B);
 static	void (*luaL_pushresultsize)	(luaL_Buffer *B, size_t sz);
 static	char *(*luaL_buffinitsize)	(lua_State *L, luaL_Buffer *B, size_t sz);
+static  void (*luaL_openlibs)		(lua_State *L);
 #define lauxlib_h
 #define LUA_ERRFILE (LUA_ERRERR+1)
 #define luaL_checkversion(L) luaL_checkversion_(L, LUA_VERSION_NUM)
@@ -624,6 +631,7 @@ static	void 	__lite_xl_fallback_luaL_addvalue	(luaL_Buffer *B) { fputs("warning:
 static	void 	__lite_xl_fallback_luaL_pushresult	(luaL_Buffer *B) { fputs("warning: luaL_pushresult is a stub", stderr); }
 static	void 	__lite_xl_fallback_luaL_pushresultsize	(luaL_Buffer *B, size_t sz) { fputs("warning: luaL_pushresultsize is a stub", stderr); }
 static	char *	__lite_xl_fallback_luaL_buffinitsize	(lua_State *L, luaL_Buffer *B, size_t sz) { fputs("warning: luaL_buffinitsize is a stub", stderr); }
+static  void    __lite_xl_fallback_luaL_openlibs        (lua_State *L) { fputs("warning: luaL_openlibs is a stub", stderr); }
 
 #define IMPORT_SYMBOL(name, ret, ...) name = (name = (ret (*) (__VA_ARGS__)) symbol(#name), name == NULL ? &__lite_xl_fallback_##name : name)
 static void lite_xl_plugin_init(void *XL) {
@@ -696,7 +704,7 @@ static void lite_xl_plugin_init(void *XL) {
 	IMPORT_SYMBOL(lua_getctx, int , lua_State *L, int *ctx);
 	IMPORT_SYMBOL(lua_pcallk, int , lua_State *L, int nargs, int nresults, int errfunc, int ctx, lua_CFunction k);
 	IMPORT_SYMBOL(lua_load, int , lua_State *L, lua_Reader reader, void *dt, const char *chunkname, const char *mode);
-	IMPORT_SYMBOL(lua_dump, int , lua_State *L, lua_Writer writer, void *data);
+	IMPORT_SYMBOL(lua_dump, int , lua_State *L, lua_Writer writer, void *data, int strip);
 	IMPORT_SYMBOL(lua_yieldk, int , lua_State *L, int nresults, int ctx, lua_CFunction k);
 	IMPORT_SYMBOL(lua_resume, int , lua_State *L, lua_State *from, int narg);
 	IMPORT_SYMBOL(lua_status, int , lua_State *L);
@@ -764,5 +772,6 @@ static void lite_xl_plugin_init(void *XL) {
 	IMPORT_SYMBOL(luaL_pushresult, void , luaL_Buffer *B);
 	IMPORT_SYMBOL(luaL_pushresultsize, void , luaL_Buffer *B, size_t sz);
 	IMPORT_SYMBOL(luaL_buffinitsize, char *, lua_State *L, luaL_Buffer *B, size_t sz);
+	IMPORT_SYMBOL(luaL_openlibs, void, lua_State* L);
 }
 #endif
