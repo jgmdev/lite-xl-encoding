@@ -18,6 +18,11 @@
           "path": "init.x86_64-darwin.so"
         },
         {
+          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.0/encoding.aarch64-darwin.so",
+          "arch": "aarch64-darwin",
+          "path": "init.aarch64-darwin.so"
+        },
+        {
           "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.0/encoding.x86_64-windows.dll",
           "arch": "x86_64-windows",
           "path": "init.x86_64-windows.dll"
