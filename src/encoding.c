@@ -553,3 +553,8 @@ int luaopen_lite_xl_encoding(lua_State *L, void* (*api_require)(char *)) {
 #endif
   return luaopen_encoding(L);
 }
+
+/* Fix link issue on windows */
+#if defined(_WIN32)
+int SDL_main(int argc, char *argv[]){ return 0; }
+#endif
