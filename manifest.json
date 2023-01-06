@@ -8,31 +8,31 @@
       "mod_version": "3",
       "files": [
         {
-          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.0/encoding.x86_64-linux.so",
+          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.1/encoding.x86_64-linux.so",
           "arch": "x86_64-linux",
           "path": "init.x86_64-linux.so",
           "checksum": "SKIP"
         },
         {
-          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.0/encoding.x86_64-darwin.so",
+          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.1/encoding.x86_64-darwin.so",
           "arch": "x86_64-darwin",
           "path": "init.x86_64-darwin.so",
           "checksum": "SKIP"
         },
         {
-          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.0/encoding.aarch64-darwin.so",
+          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.1/encoding.aarch64-darwin.so",
           "arch": "aarch64-darwin",
           "path": "init.aarch64-darwin.so",
           "checksum": "SKIP"
         },
         {
-          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.0/encoding.x86_64-windows.dll",
+          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.1/encoding.x86_64-windows.dll",
           "arch": "x86_64-windows",
           "path": "init.x86_64-windows.dll",
           "checksum": "SKIP"
         },
         {
-          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.0/encoding.x86-windows.dll",
+          "url": "https://github.com/jgmdev/lite-xl-encoding/releases/download/v1.1/encoding.x86-windows.dll",
           "arch": "x86-windows",
           "path": "init.x86-windows.dll",
           "checksum": "SKIP"
