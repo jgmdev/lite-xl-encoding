@@ -5,8 +5,7 @@ project('encoding',
     default_options : [
         'c_std=c11',
         'cpp_std=c++11',
-        'buildtype=release',
-        'wrap_mode=forcefallback'
+        'buildtype=release'
     ]
 )
 

@@ -120,7 +120,7 @@ jobs:
           files: encoding.${{ env.PLATFORM }}.dll
 
   build_macos:
-    name: macOS (x86_64)
+    name: macOS
     needs: release
     runs-on: macos-11
     strategy:
@@ -146,9 +146,9 @@ jobs:
         run: |
           if [[ "${{ matrix.arch }}" == "aarch64" ]]; then
             meson setup --cross-file crossfiles/macos_arm64.conf \
-              --wrap-mode forcefallback -Duse_lua=disabled build
+              --wrap-mode forcefallback build
           else
-            meson setup --wrap-mode forcefallback -Duse_lua=disabled build
+            meson setup --wrap-mode forcefallback build
           fi
           meson compile -C build
           mv build/encoding.so encoding.${{ matrix.arch }}-darwin.so
