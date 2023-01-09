@@ -62,7 +62,8 @@ jobs:
           pip3 install meson
       - name: Build
         run: |
-          meson setup --wrap-mode forcefallback build && meson compile -C build
+          meson setup --wrap-mode forcefallback -Dprefer_static=true build
+          meson compile -C build
           strip build/encoding.so
           mv build/encoding.so encoding.x86_64-linux.so
       - name: Upload
@@ -108,7 +109,9 @@ jobs:
             ${MINGW_PACKAGE_PREFIX}-{gcc,meson,ninja,ntldd,pkg-config,mesa,freetype,pcre2,SDL2} unzip
       - name: Build
         run: |
-          meson setup --wrap-mode forcefallback build
+          meson setup --wrap-mode forcefallback -Dprefer_static=true \
+            -Dcpp_link_args="-static-libstdc++ -Wl,-Bstatic,--whole-archive -lpthread -Wl,--no-whole-archive" \
+            build
           meson compile -C build
           ntldd -R "build/encoding.dll"
           mv build/encoding.dll encoding.${PLATFORM}.dll
@@ -146,9 +149,10 @@ jobs:
         run: |
           if [[ "${{ matrix.arch }}" == "aarch64" ]]; then
             meson setup --cross-file crossfiles/macos_arm64.conf \
-              --wrap-mode forcefallback build
+              --wrap-mode forcefallback -Dprefer_static=true \
+              build
           else
-            meson setup --wrap-mode forcefallback build
+            meson setup --wrap-mode forcefallback -Dprefer_static=true build
           fi
           meson compile -C build
           mv build/encoding.so encoding.${{ matrix.arch }}-darwin.so
