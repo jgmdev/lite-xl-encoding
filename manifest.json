@@ -1,5 +1,5 @@
 {
-  "plugins": [
+  "addons": [
     {
       "id": "encoding",
       "version": "1.1",
